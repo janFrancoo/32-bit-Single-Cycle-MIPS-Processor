@@ -8,24 +8,150 @@ z2
 !i10f 100
 cModel Technology
 dC:/Users/PC/Documents/Verilog Projects/Alarm
-vcontrol
-!s110 1589801967
+vadder_31_bit
+Z0 !s110 1589892709
 !i10b 1
-!s100 B0h17EM0MBNjoSfF=G>2W2
-IzZM0AEDD6TiF;e`MGAlW62
-VDg1SIo80bB@j0V0VzS_@n1
-dC:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor
-w1589801958
-8C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v
-FC:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v
-L0 2
-OP;L;10.4a;61
+!s100 ?LYWhVV4P0kW0RDj7M]]i0
+I1V?JeQ89BKMDdZoDnfFiD3
+Z1 VDg1SIo80bB@j0V0VzS_@n1
+Z2 dC:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor
+Z3 w1589892705
+Z4 8C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v
+Z5 FC:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v
+L0 165
+Z6 OP;L;10.4a;61
 r1
 !s85 0
 31
-!s108 1589801967.000000
-!s107 C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v|
-!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v|
+Z7 !s108 1589892708.000000
+Z8 !s107 C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v|
+Z9 !s90 -reportprogress|300|-work|work|-stats=none|C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v|
 !s101 -O0
 !i113 1
-o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact -O0
+Z10 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact -O0
+varithmetic_logic_unit
+R0
+!i10b 1
+!s100 Z5OUleB=j]cBo;m3K`8cO3
+IGbEj?QM77^ECaPoJW9XWU0
+R1
+R2
+R3
+R4
+R5
+L0 70
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!s101 -O0
+!i113 1
+R10
+vcontrol
+Z11 !s110 1589892708
+!i10b 1
+!s100 MZSo4l_923MU]1[hM0MDS3
+IG@eI0N:3Q7?5YCdkV>MDn0
+R1
+R2
+R3
+R4
+R5
+L0 2
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!s101 -O0
+!i113 1
+R10
+vcontrol_tb
+!s110 1589806048
+!i10b 1
+!s100 H>Qf^16YTO87IAH;8`LU60
+I:z[;DTV7`g]nnG:o35TQ`2
+R1
+R2
+w1589806044
+8C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v
+FC:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v
+L0 2
+R6
+r1
+!s85 0
+31
+!s108 1589806048.000000
+!s107 C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v|
+!s90 -reportprogress|300|-work|work|-stats=none|C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v|
+!s101 -O0
+!i113 1
+R10
+vfull_adder
+R0
+!i10b 1
+!s100 NoI^f[HQ4OQ^_Ao]4>f:=2
+I1j@12zD5YXgTz6mzKn[jn0
+R1
+R2
+R3
+R4
+R5
+L0 185
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!s101 -O0
+!i113 1
+R10
+vmultiplier_31_bit
+R0
+!i10b 1
+!s100 [mIBDVJj2hz`0NHTSShLI2
+I9KOXD[O`X_kgADb1=z@CS2
+R1
+R2
+R3
+R4
+R5
+L0 194
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!s101 -O0
+!i113 1
+R10
+vregister
+R11
+!i10b 1
+!s100 Pj3BF1cjBgEHTaeO7;KiI0
+IffIKICD;9i2ZOe_gbafG[1
+R1
+R2
+R3
+R4
+R5
+L0 48
+R6
+r1
+!s85 0
+31
+R7
+R8
+R9
+!s101 -O0
+!i113 1
+R10

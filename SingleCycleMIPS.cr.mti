@@ -1,0 +1,30 @@
+{C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v} {2 {vlog -work work -stats=none {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module control
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(32): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(36): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(38): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(38): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(44): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(44): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+
+-- Compiling module register
+-- Compiling module arithmetic_logic_unit
+-- Compiling module adder_31_bit
+-- Compiling module full_adder
+-- Compiling module multiplier_31_bit
+
+Top level modules:
+	control
+	register
+	arithmetic_logic_unit
+
+} {} {}} {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v} {1 {vlog -work work -stats=none {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v}
+Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+
+} {} {}}
