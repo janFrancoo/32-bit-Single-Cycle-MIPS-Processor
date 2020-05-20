@@ -1,4 +1,70 @@
 
+module mips_processor;
+	
+	reg clk;
+	
+	initial begin
+			clk = 1'b0;
+		#50 $stop;
+	end
+	
+	always #2 clk = ~clk;
+	
+	reg [31:0] program_counter = 32'b0;
+	reg [31:0] instruction_memory [31:0];
+	reg [31:0] instruction = 32'b0;
+	
+	initial begin
+		$readmemh("test_program_1_mem_file.dat", instruction_memory);
+		forever #2 $display("%t %b %b", $time, instruction_memory[0], instruction_memory[1]);
+	end
+	
+	wire zero;
+	wire [2:0] alu_op;
+	wire [3:0] alu_code;
+	wire [31:0] alu_result;
+	wire [31:0] read_data, read_data_1, read_data_2;
+	wire reg_dst, jump, branch, mem_read, mem_to_reg, mem_write, alu_src, reg_write;
+	
+	wire [31:0] alu_in_reg_2;
+	wire [31:0] sign_extended_15_0;
+	wire [4:0]	write_register;
+	wire [31:0] reg_write_data;
+	wire branch_enable;
+	
+	assign sign_extended_15_0 = {{16{instruction[15]}}, instruction[15:0]};
+	assign alu_in_reg_2 = (alu_src == 1'b0) ? read_data_2 : sign_extended_15_0;
+	assign write_register = (reg_dst == 1'b0) ? instruction[20:16] : instruction[15:11];
+	assign reg_write_data = (mem_to_reg == 1'b1) ? read_data : alu_result;
+	assign branch_enable = branch & zero;
+	
+	control cntrl_unit (instruction[31:26], reg_dst, jump, branch, mem_read, 
+							mem_to_reg, alu_op, mem_write, alu_src, reg_write);
+							
+	alu_control alu_cntrl (alu_op, instruction[5:0], alu_code);
+	
+	register reg_unit (reg_write, instruction[25:21], instruction[20:16], write_register, reg_write_data, read_data_1, read_data_2);
+	
+	arithmetic_logic_unit alu (alu_code, read_data_1, alu_in_reg_2, zero, alu_result);
+								
+	data_memory memory (mem_read, mem_write, alu_result, read_data_2, read_data);
+	
+	always @ (posedge clk) begin		
+		if (jump == 1'b0 && branch_enable == 1'b0)
+			program_counter = program_counter + 1;
+		else if (jump == 1'b0 && branch_enable == 1'b1) begin
+			program_counter = program_counter + 1;
+			program_counter = program_counter + (sign_extended_15_0 << 2);
+		end else if (jump == 1'b1) begin
+			program_counter = program_counter + 1;
+			program_counter = {program_counter[31:28], instruction[25:0] << 2};
+		end
+			
+		instruction = instruction_memory[program_counter];
+	end
+	
+endmodule
+
 module control (input [5:0] instruction,
 					output reg_dst, jump, branch, mem_read, mem_to_reg, [2:0] alu_op, mem_write, alu_src, reg_write);
 
@@ -152,7 +218,7 @@ module alu_control(input [2:0] alu_op, [5:0] func,
 	
 endmodule
 
-module register (input clk, reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31:0] write_data, 
+module register (input reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31:0] write_data, 
 					output [31:0] read_data_1,  [31:0] read_data_2);
 
 	reg [31:0] regs [31:0];
@@ -163,7 +229,7 @@ module register (input clk, reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg
 			regs[i] = 32'b0;
 	end
 	
-	always @ (posedge clk) begin
+	always @ (*) begin
 		if (reg_write) begin
 			regs[write_reg] = write_data;
 		end
@@ -174,145 +240,40 @@ module register (input clk, reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg
 
 endmodule
 
-module arithmetic_logic_unit (input [5:0] alu_control, [31:0] A, [31:0] B,
+module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 								output zero, reg [31:0] alu_result);
-
-	wire two_s_complement_of_b;
-	wire [31:0] addition_res, subtraction_res, multiplication_res;
-						
-	assign two_s_complement_of_b = ~B + 1'b1;
-						
-	adder_31_bit adder (A, B, addition_res);
-	adder_31_bit for_sub (A, two_s_complement_of_b, subtraction_res);
-	
-	multiplier_31_bit (A, B[15:0], multiplication_res);
-					
+											
 	always @ (*) begin
 		case (alu_control)
-			6'b100000: 
-				// addition
-				alu_result = addition_res;
-			6'b100001:
-				// unsigned addition
-				alu_result = addition_res;
-			6'b100100:
-				// bitwise AND
+			4'b0000: 
+				alu_result = A + B;
+			4'b0001:
+				alu_result = A - B;
+			4'b1010:
+				alu_result = A - B;
+			4'b0010:
+				alu_result = A * B;
+			4'b0011:
+				alu_result = A / B;
+			4'b0100:
 				alu_result = A & B;
-			6'b011010:
-				// division
-				alu_result = A / B;
-			6'b011011:
-				// unsigned division
-				alu_result = A / B;
-			6'b011000:
-				// multiplication
-				alu_result = multiplication_res;
-			6'b011001:
-				// unsigned multiplication
-				alu_result = multiplication_res;
-			6'b100010:
-				// subtraction
-				alu_result = subtraction_res;
-			6'b100011:
-				// unsigned subtraction
-				alu_result = subtraction_res;
-			6'b100110:
-				// bitwise XOR
-				alu_result = A ^ B;
-			6'b100101:
-				// bitwise OR
+			4'b0101:
 				alu_result = A | B;
-			6'b101010:
-				// slt signed
-				begin
-					if (A[31] == 1'b1 && B[31] == 1'b1) begin
-						if (A[30:0] > B[30:0])
-							alu_result = 1'b1;
-						else
-							alu_result = 1'b0;
-					end 
-					else if (A[31] == 1'b1)
-						alu_result = 1'b1;
-					else if (B[31] == 1'b1)
-						alu_result = 1'b0;
-					else begin
-						if (A[30:0] > B[30:0])
-							alu_result = 1'b1;
-						else
-							alu_result = 1'b0;
-					end
-				end
-			6'b101011:
-				// slt unsigned
-				begin
-					if (A < B)
-						alu_result = 1'b1;
-					else
-						alu_result = 1'b0;
-				end
-			6'b000011:
-				// sra
-				alu_result = 6'b0; // later
-			6'b000010:
-				// srl
-				alu_result = 6'b0; // later
-			6'b000110:
-				// srlv
+			4'b0110:
+				alu_result = ~(A | B);
+			4'b0111:
+				alu_result = A ^ B;
+			4'b1000:
 				alu_result = B >> A;
-			6'b000100:
-				// sllv
+			4'b1001:
 				alu_result = B << A;
 			default:
 				alu_result = 32'b0;
 		endcase
 	end
-
-endmodule
-
-module adder_31_bit (input [31:0] A, [31:0] B, 
-						output [31:0] sum);
-
-	genvar i;
-	wire [30:0] c;
-	wire c_out;
-
-	for (i=0; i<32; i=i+1) begin
-		if (i == 0)
-			full_adder fa (A[i], B[i], 1'b0, sum[i], c[i]);
-		else if (i == 31) begin
-			full_adder fa (A[i], B[i], 1'b0, sum[i], c_out);
-		end else
-			full_adder fa (A[i], B[i], c[i-1], sum[i], c[i]);
-	end
 	
-	assign sum[31] = (c_out) ? 1'b1 : sum[31];
-
-endmodule
-
-module full_adder(x, y, c_in, sum, c_out);
-
-	input x, y, c_in;
-	output sum, c_out;
-
-	assign {c_out, sum} = x + y + c_in;
-
-endmodule
-
-module multiplier_31_bit (input [31:0] x, [15:0] y,
-							output reg [31:0] res);
-
-	reg [15:0] i = 0;
-	reg [31:0] t_x;
-
-	always @ (x or y) begin
-		res = 0;
-		t_x = x;
-		for (i=0; i<16; i=i+1) begin
-			if (y[i] == 1)
-				res = res + t_x;
-			t_x = t_x << 1;
-		end
-	end
+	assign zero = ((alu_control != 4'b1010 && alu_result == 32'b0) || 
+					(alu_control == 4'b1010 && alu_result == 32'b0)) ? 1'b1 : 1'b0;
 
 endmodule
 

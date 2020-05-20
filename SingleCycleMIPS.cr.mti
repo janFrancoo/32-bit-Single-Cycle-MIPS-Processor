@@ -1,52 +1,46 @@
 {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v} {2 {vlog -work work -stats=none {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v}
 Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
+-- Compiling module mips_processor
 -- Compiling module control
 -- Compiling module alu_control
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(113): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(179): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(115): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(181): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(117): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(183): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(119): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(185): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(121): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(187): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(123): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(189): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(125): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(191): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(127): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(193): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(129): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(195): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(131): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(197): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(133): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(199): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(135): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(201): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(137): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(203): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(139): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(205): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(141): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(207): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
-** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(143): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
+** Warning: C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v(209): (vlog-2600) [RDGN] - Redundant digits in numeric literal.
 
 -- Compiling module register
 -- Compiling module arithmetic_logic_unit
--- Compiling module adder_31_bit
--- Compiling module full_adder
--- Compiling module multiplier_31_bit
 -- Compiling module data_memory
 
 Top level modules:
-	control
-	alu_control
-	register
-	arithmetic_logic_unit
-	data_memory
+	mips_processor
 
 } {} {}} {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v} {1 {vlog -work work -stats=none {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor_tb.v}
 Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015

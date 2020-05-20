@@ -30,63 +30,63 @@ Z9 !s90 -reportprogress|300|-work|work|-stats=none|C:/Users/PC/Documents/Verilog
 !i113 1
 Z10 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact -O0
 valu_control
-R0
+Z11 !s110 1590014553
 !i10b 1
-!s100 ]nHEP[;<_jUkH:]ke1>@T2
-I=`VahaTeU_C7`G5=^f53M3
+!s100 `MZ8E1c5Fc]RnU1mJJ2l[0
+ICBXPBN[?6LmXmBBifjgD`0
 R1
 R2
-R3
+Z12 w1590014305
 R4
 R5
-L0 78
+L0 144
 R6
 r1
 !s85 0
 31
-R7
+Z13 !s108 1590014553.000000
 R8
 R9
 !s101 -O0
 !i113 1
 R10
 varithmetic_logic_unit
-R0
+R11
 !i10b 1
-!s100 0DPH6PAYK8MDFE1Do`1[M2
-Ig<bk2jTczfoX_SXUf?SI80
+!s100 ?fjk_S9A:JK3Diidd4kRD2
+IKnIb7P1Nj04A]g30nJgL>3
 R1
 R2
-R3
+R12
 R4
 R5
-L0 177
+L0 243
 R6
 r1
 !s85 0
 31
-R7
+R13
 R8
 R9
 !s101 -O0
 !i113 1
 R10
 vcontrol
-R0
+R11
 !i10b 1
-!s100 TjYhzK?@O]gKBYTagRonL0
-I4>0TRK_dZSJn]LCPCNUUS3
+!s100 3Wl=ihTkXa>m[JSmSDUGN1
+I:Q`@i`dI`KWdThVI2:zFN1
 R1
 R2
-R3
+R12
 R4
 R5
-L0 2
+L0 68
 R6
 r1
 !s85 0
 31
-R7
+R13
 R8
 R9
 !s101 -O0
@@ -114,21 +114,21 @@ r1
 !i113 1
 R10
 vdata_memory
-R0
+R11
 !i10b 1
-!s100 CeHRg:4?Ya`?n0]dM`IR@2
-IGcAm[HNcjkEUlgl]7PJdd1
+!s100 75BGP;fLFB^>PLcA1IkNU2
+I6<C0o^SVce:`T;IlEM7I`0
 R1
 R2
-R3
+R12
 R4
 R5
-L0 319
+L0 280
 R6
 r1
 !s85 0
 31
-R7
+R13
 R8
 R9
 !s101 -O0
@@ -150,6 +150,27 @@ r1
 !s85 0
 31
 R7
+R8
+R9
+!s101 -O0
+!i113 1
+R10
+vmips_processor
+R11
+!i10b 1
+!s100 N@Bz?4FQbC6]2J_edTUSO0
+IX@@@TIJHjkJnT?G6eikO12
+R1
+R2
+R12
+R4
+R5
+L0 2
+R6
+r1
+!s85 0
+31
+R13
 R8
 R9
 !s101 -O0
@@ -177,21 +198,21 @@ R9
 !i113 1
 R10
 vregister
-R0
+R11
 !i10b 1
-!s100 Jn@jaTd`A;I;cafI[QRDI1
-Ih=Mm`fiGdfZljL1?l;3nA0
+!s100 ZjJW`1;oUV@Q^@EgVh?jI3
+ILLIBabF1gKRfHf85V=z_@0
 R1
 R2
-R3
+R12
 R4
 R5
-L0 155
+L0 221
 R6
 r1
 !s85 0
 31
-R7
+R13
 R8
 R9
 !s101 -O0
