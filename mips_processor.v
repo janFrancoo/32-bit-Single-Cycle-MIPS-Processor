@@ -4,19 +4,18 @@ module mips_processor;
 	reg clk;
 	
 	initial begin
-			clk = 1'b0;
-		#50 $stop;
+			clk = 1'b1;
+		#70 $stop;
 	end
 	
-	always #2 clk = ~clk;
+	always #5 clk = ~clk;
 	
 	reg [31:0] program_counter = 32'b0;
-	reg [31:0] instruction_memory [31:0];
+	reg [31:0] instruction_memory [8:0];
 	reg [31:0] instruction = 32'b0;
 	
 	initial begin
 		$readmemh("test_program_1_mem_file.dat", instruction_memory);
-		forever #2 $display("%t %b %b", $time, instruction_memory[0], instruction_memory[1]);
 	end
 	
 	wire zero;
@@ -39,7 +38,7 @@ module mips_processor;
 	assign branch_enable = branch & zero;
 	
 	control cntrl_unit (instruction[31:26], reg_dst, jump, branch, mem_read, 
-							mem_to_reg, alu_op, mem_write, alu_src, reg_write);
+							mem_to_reg, mem_write, alu_src, reg_write, alu_op);
 							
 	alu_control alu_cntrl (alu_op, instruction[5:0], alu_code);
 	
@@ -49,7 +48,9 @@ module mips_processor;
 								
 	data_memory memory (mem_read, mem_write, alu_result, read_data_2, read_data);
 	
-	always @ (posedge clk) begin		
+	always @ (posedge clk) begin
+		instruction = instruction_memory[program_counter];
+		
 		if (jump == 1'b0 && branch_enable == 1'b0)
 			program_counter = program_counter + 1;
 		else if (jump == 1'b0 && branch_enable == 1'b1) begin
@@ -59,14 +60,14 @@ module mips_processor;
 			program_counter = program_counter + 1;
 			program_counter = {program_counter[31:28], instruction[25:0] << 2};
 		end
-			
-		instruction = instruction_memory[program_counter];
 	end
+	
+	initial forever #1 $display("%t INSTR %b", $time, instruction);
 	
 endmodule
 
 module control (input [5:0] instruction,
-					output reg_dst, jump, branch, mem_read, mem_to_reg, [2:0] alu_op, mem_write, alu_src, reg_write);
+					output reg_dst, jump, branch, mem_read, mem_to_reg, mem_write, alu_src, reg_write, [2:0] alu_op);
 
 	/*
 	instruction    reg_dst    jump    branch    mem_read     mem_to_reg    alu_op    mem_write    alu_src    reg_write		
@@ -90,7 +91,7 @@ module control (input [5:0] instruction,
 	
 	reg [10:0] out;
 	
-	always @ (*) begin
+	always @ (instruction) begin
 		case (instruction)
 			6'b000000:
 				out = 11'b10000111001;
@@ -138,6 +139,9 @@ module control (input [5:0] instruction,
 	assign mem_write 	= out[2];
 	assign alu_src 		= out[1];
 	assign reg_write 	= out[0];
+	
+	initial forever #1 $display("%t CNTRL %b %b %b %b %b %b %b %b %b %b", $time, instruction, reg_dst, jump, branch, mem_read, mem_to_reg, 
+																				alu_op, mem_write, alu_src, reg_write);
 
 endmodule
 
@@ -160,7 +164,7 @@ module alu_control(input [2:0] alu_op, [5:0] func,
 	// shift_left		4'b1001
 	// sub_not			4'b1010
 					
-	always @ (*) begin
+	always @ (alu_op or func) begin
 		case (alu_op)
 			3'b000:
 				out = 4'b0000;
@@ -216,20 +220,23 @@ module alu_control(input [2:0] alu_op, [5:0] func,
 	
 	assign alu_code = out;
 	
+	initial forever #1 $display("%t ALU_CNTRL %b %b %b", $time, alu_op, func, alu_code);
+	
 endmodule
 
 module register (input reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31:0] write_data, 
 					output [31:0] read_data_1,  [31:0] read_data_2);
 
-	reg [31:0] regs [31:0];
+	reg [31:0] regs [7:0];
 	
 	integer i;
 	initial begin
-		for (i=0; i<32; i=i+1)
-			regs[i] = 32'b0;
+		for (i=0; i<255; i=i+1) begin
+			regs[i] <= 32'b0;
+		end
 	end
 	
-	always @ (*) begin
+	always @ (reg_write or write_reg or write_data) begin
 		if (reg_write) begin
 			regs[write_reg] = write_data;
 		end
@@ -237,20 +244,44 @@ module register (input reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31
 	
 	assign read_data_1 = regs[reg_1];
 	assign read_data_2 = regs[reg_2];
+	
+	initial begin
+		// forever #1 $display("%t REG %b %b %b %b %b", $time, reg_write, reg_1, reg_2, write_reg, write_data);
+		forever #10 begin
+			for (i=0; i<255; i=i+1) begin
+				$display("%t %b -> %b", $time, i, regs[i]);
+			end
+		end
+	end
 
 endmodule
 
 module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
-								output zero, reg [31:0] alu_result);
-											
-	always @ (*) begin
+								output reg zero, [31:0] alu_result);
+													
+	wire [31:0] addition_result;
+	adder_32_bit adder (A, B, addition_result);
+													
+	always @ (alu_control or A or B or addition_result) begin
 		case (alu_control)
 			4'b0000: 
-				alu_result = A + B;
+				alu_result <= addition_result;
 			4'b0001:
-				alu_result = A - B;
+				begin
+					alu_result = A - B;
+					if (alu_result == 32'b0)
+						zero = 1'b1;
+					else
+						zero = 1'b0;
+				end
 			4'b1010:
-				alu_result = A - B;
+				begin
+					alu_result = A - B;
+					if (alu_result != 32'b0)
+						zero = 1'b1;
+					else
+						zero = 1'b0;
+				end
 			4'b0010:
 				alu_result = A * B;
 			4'b0011:
@@ -272,23 +303,22 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 		endcase
 	end
 	
-	assign zero = ((alu_control != 4'b1010 && alu_result == 32'b0) || 
-					(alu_control == 4'b1010 && alu_result == 32'b0)) ? 1'b1 : 1'b0;
-
+	initial forever #1 $display("%t ALU %b %b %b %b %b", $time, alu_control, A, B, zero, alu_result);
+	
 endmodule
 
 module data_memory(input mem_read, mem_write, [31:0] address, [31:0] write_data, 
 					output reg [31:0] read_data);
 
-	reg [31:0] mem [31:0];
+	reg [31:0] mem [7:0];
 	
 	integer i;
 	initial begin
-		for (i=0; i<32; i=i+1)
+		for (i=0; i<255; i=i+1)
 			mem[i] = 32'b0;
 	end
 	
-	always @ (*) begin
+	always @ (mem_read or mem_write or address or write_data) begin
 		if (mem_write)
 			mem[address] = write_data;
 		if (mem_read)
@@ -296,5 +326,35 @@ module data_memory(input mem_read, mem_write, [31:0] address, [31:0] write_data,
 		else
 			read_data = 32'b0;
 	end
+	
+	initial forever #1 $display("%t DATA_MEM %b %b %b %b %b", $time, mem_read, mem_write, address, write_data, read_data);
+
+endmodule
+
+module full_adder(input x, y, c_in, 
+					output reg sum, c_out);
+		
+	always @ (*) begin
+		{c_out, sum} <= x + y + c_in;
+	end
+
+endmodule
+
+module adder_32_bit (input [31:0] A, B,
+						output [31:0] sum);
+
+	genvar i;
+	wire [31:0] c;
+	
+	generate 
+		for (i=0; i<32; i=i+1) begin
+			if (i == 0)
+				full_adder fa (A[i], B[i], 1'b0, sum[i], c[i]);
+			else
+				full_adder fa (A[i], B[i], c[i-1], sum[i], c[i]);
+		end 
+	endgenerate
+	
+	initial forever #1 $display("%t ADDER %b %b %b", $time, A, B, sum);
 
 endmodule
