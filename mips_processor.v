@@ -4,13 +4,13 @@ module mips_processor;
 	reg clk;
 	
 	initial begin
-			clk = 1'b1;
-		#70 $stop;
+				clk = 1'b0;
+		#100 	$stop;
 	end
 	
 	always #5 clk = ~clk;
 	
-	reg [31:0] program_counter = 32'b0;
+	reg [31:0] program_counter = -1;
 	reg [31:0] instruction_memory [8:0];
 	reg [31:0] instruction = 32'b0;
 	
@@ -42,15 +42,13 @@ module mips_processor;
 							
 	alu_control alu_cntrl (alu_op, instruction[5:0], alu_code);
 	
-	register reg_unit (reg_write, instruction[25:21], instruction[20:16], write_register, reg_write_data, read_data_1, read_data_2);
+	register reg_unit (clk, reg_write, instruction[25:21], instruction[20:16], write_register, reg_write_data, read_data_1, read_data_2);
 	
 	arithmetic_logic_unit alu (alu_code, read_data_1, alu_in_reg_2, zero, alu_result);
 								
-	data_memory memory (mem_read, mem_write, alu_result, read_data_2, read_data);
+	data_memory memory (clk, mem_read, mem_write, alu_result, read_data_2, read_data);
 	
 	always @ (posedge clk) begin
-		instruction = instruction_memory[program_counter];
-		
 		if (jump == 1'b0 && branch_enable == 1'b0)
 			program_counter = program_counter + 1;
 		else if (jump == 1'b0 && branch_enable == 1'b1) begin
@@ -60,9 +58,10 @@ module mips_processor;
 			program_counter = program_counter + 1;
 			program_counter = {program_counter[31:28], instruction[25:0] << 2};
 		end
+		
+		instruction = instruction_memory[program_counter];
+		$display("%t INSTR %b", $time, instruction);
 	end
-	
-	initial forever #1 $display("%t INSTR %b", $time, instruction);
 	
 endmodule
 
@@ -91,7 +90,7 @@ module control (input [5:0] instruction,
 	
 	reg [10:0] out;
 	
-	always @ (instruction) begin
+	always @ (instruction) begin																				
 		case (instruction)
 			6'b000000:
 				out = 11'b10000111001;
@@ -128,6 +127,9 @@ module control (input [5:0] instruction,
 			default:
 				out = 11'b0;
 		endcase
+		
+		$display("%t CNTRL %b %b %b %b %b %b %b %b %b %b", $time, instruction, reg_dst, jump, branch, mem_read, mem_to_reg, 
+																						alu_op, mem_write, alu_src, reg_write);
 	end
 
 	assign reg_dst 		= out[10];
@@ -139,17 +141,12 @@ module control (input [5:0] instruction,
 	assign mem_write 	= out[2];
 	assign alu_src 		= out[1];
 	assign reg_write 	= out[0];
-	
-	initial forever #1 $display("%t CNTRL %b %b %b %b %b %b %b %b %b %b", $time, instruction, reg_dst, jump, branch, mem_read, mem_to_reg, 
-																				alu_op, mem_write, alu_src, reg_write);
 
 endmodule
 
-module alu_control(input [2:0] alu_op, [5:0] func,
-					output [3:0] alu_code);
-					
-	reg [3:0] out;
-	
+module alu_control (input [2:0] alu_op, [5:0] func,
+					output reg [3:0] alu_code);
+						
 	// addition 		4'b0000
 	// subtraction 		4'b0001
 	// multiplication 	4'b0010
@@ -164,67 +161,65 @@ module alu_control(input [2:0] alu_op, [5:0] func,
 	// shift_left		4'b1001
 	// sub_not			4'b1010
 					
-	always @ (alu_op or func) begin
+	always @ (alu_op or func) begin		
 		case (alu_op)
 			3'b000:
-				out = 4'b0000;
+				alu_code = 4'b0000;
 			3'b001:
-				out = 4'b0001;
+				alu_code = 4'b0001;
 			3'b010:
-				out = 4'b0100;
+				alu_code = 4'b0100;
 			3'b011:
-				out = 4'b0101;
+				alu_code = 4'b0101;
 			3'b100:
-				out = 4'b0111;
+				alu_code = 4'b0111;
 			3'b101:
-				out = 4'b1010;
+				alu_code = 4'b1010;
 			3'b111:
-				case (func)
-					5'b100000:		// addition
-						out = 4'b0000;
-					5'b100001:		// addition u
-						out = 4'b0000;
-					5'b100100:		// and
-						out = 4'b0100;
-					5'b100111:		// nor
-						out = 4'b0110;
-					5'b100101:		// or
-						out = 4'b0101;
-					5'b101010:		// slt
-						out = 4'b0001;
-					5'b101011:		// slt u
-						out = 4'b0001;
-					5'b100010:		// sub
-						out = 4'b0001;
-					5'b100011:		// sub u
-						out = 4'b0001;
-					5'b100110:		// xor
-						out = 4'b0111;
-					5'b000000:		// shift left
-						out = 4'b1001;
-					5'b000100:		// shift left
-						out = 4'b1001;
-					5'b000011:		// shift right
-						out = 4'b1000;
-					5'b000111:		// shift right
-						out = 4'b1000;
-					5'b000010:		// shift right
-						out = 4'b1000;
-					5'b000110:		// shift right
-						out = 4'b1000;
-				endcase
-			default:
-				out = 4'b0;
+				begin
+					case (func)
+						6'b100000:		// addition
+							alu_code = 4'b0000;
+						6'b100001:		// addition u
+							alu_code = 4'b0000;
+						6'b100100:		// and
+							alu_code = 4'b0100;
+						6'b100111:		// nor
+							alu_code = 4'b0110;
+						6'b100101:		// or
+							alu_code = 4'b0101;
+						6'b101010:		// slt
+							alu_code = 4'b0001;
+						6'b101011:		// slt u
+							alu_code = 4'b0001;
+						6'b100010:		// sub
+							alu_code = 4'b0001;
+						6'b100011:		// sub u
+							alu_code = 4'b0001;
+						6'b100110:		// xor
+							alu_code = 4'b0111;
+						6'b000000:		// shift left
+							alu_code = 4'b1001;
+						6'b000100:		// shift left
+							alu_code = 4'b1001;
+						6'b000011:		// shift right
+							alu_code = 4'b1000;
+						6'b000111:		// shift right
+							alu_code = 4'b1000;
+						6'b000010:		// shift right
+							alu_code = 4'b1000;
+						6'b000110:		// shift right
+							alu_code = 4'b1000;
+					endcase
+				end
 		endcase
+		
+		$display("%t ALU_CNTRL %b %b %b", $time, alu_op, func, alu_code);
 	end
-	
-	assign alu_code = out;
-	
-	initial forever #1 $display("%t ALU_CNTRL %b %b %b", $time, alu_op, func, alu_code);
 	
 endmodule
 
-module register (input reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31:0] write_data, 
+module register (input clk, reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31:0] write_data, 
 					output [31:0] read_data_1,  [31:0] read_data_2);
 
 	reg [31:0] regs [7:0];
@@ -236,23 +231,28 @@ module register (input reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31
 		end
 	end
 	
-	always @ (reg_write or write_reg or write_data) begin
+	always @ (posedge clk) begin
 		if (reg_write) begin
-			regs[write_reg] = write_data;
+			regs[write_reg] <= write_data;
 		end
+		
+		$writememh("reg_file.dat", regs);
+		$display("%t REG %b %b %b %b %b %b %b", $time, reg_write, reg_1, reg_2, write_reg, write_data, 
+																				read_data_1, read_data_2);
 	end
 	
 	assign read_data_1 = regs[reg_1];
 	assign read_data_2 = regs[reg_2];
-	
+		
+	/*
 	initial begin
-		// forever #1 $display("%t REG %b %b %b %b %b", $time, reg_write, reg_1, reg_2, write_reg, write_data);
-		forever #10 begin
-			for (i=0; i<255; i=i+1) begin
+		#70 begin
+			for (i=0; i<32; i=i+1) begin
 				$display("%t %b -> %b", $time, i, regs[i]);
 			end
 		end
 	end
+	*/
 
 endmodule
 
@@ -262,7 +262,7 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 	wire [31:0] addition_result;
 	adder_32_bit adder (A, B, addition_result);
 													
-	always @ (alu_control or A or B or addition_result) begin
+	always @ (alu_control or A or B or addition_result) begin		
 		case (alu_control)
 			4'b0000: 
 				alu_result <= addition_result;
@@ -301,13 +301,13 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 			default:
 				alu_result = 32'b0;
 		endcase
+		
+		$display("%t ALU %b %b %b %b %b", $time, alu_control, A, B, zero, alu_result);
 	end
-	
-	initial forever #1 $display("%t ALU %b %b %b %b %b", $time, alu_control, A, B, zero, alu_result);
-	
+		
 endmodule
 
-module data_memory(input mem_read, mem_write, [31:0] address, [31:0] write_data, 
+module data_memory(input clk, mem_read, mem_write, [31:0] address, [31:0] write_data, 
 					output reg [31:0] read_data);
 
 	reg [31:0] mem [7:0];
@@ -318,16 +318,16 @@ module data_memory(input mem_read, mem_write, [31:0] address, [31:0] write_data,
 			mem[i] = 32'b0;
 	end
 	
-	always @ (mem_read or mem_write or address or write_data) begin
+	always @ (posedge clk) begin
 		if (mem_write)
 			mem[address] = write_data;
 		if (mem_read)
 			read_data = mem[address];
 		else
 			read_data = 32'b0;
+			
+		$display("%t DATA_MEM %b %b %b %b %b", $time, mem_read, mem_write, address, write_data, read_data);
 	end
-	
-	initial forever #1 $display("%t DATA_MEM %b %b %b %b %b", $time, mem_read, mem_write, address, write_data, read_data);
 
 endmodule
 
@@ -355,6 +355,4 @@ module adder_32_bit (input [31:0] A, B,
 		end 
 	endgenerate
 	
-	initial forever #1 $display("%t ADDER %b %b %b", $time, A, B, sum);
-
 endmodule
