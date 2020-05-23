@@ -5,13 +5,13 @@ module mips_processor;
 	
 	initial begin
 				clk = 1'b0;
-		#100 	$stop;
+		#160 	$stop;
 	end
 	
 	always #5 clk = ~clk;
 	
 	reg [31:0] program_counter = -1;
-	reg [31:0] instruction_memory [8:0];
+	reg [31:0] instruction_memory [31:0];
 	reg [31:0] instruction = 32'b0;
 	
 	initial begin
@@ -128,8 +128,7 @@ module control (input [5:0] instruction,
 				out = 11'b0;
 		endcase
 		
-		$display("%t CNTRL %b %b %b %b %b %b %b %b %b %b", $time, instruction, reg_dst, jump, branch, mem_read, mem_to_reg, 
-																						alu_op, mem_write, alu_src, reg_write);
+		$display("%t CNTRL %b %b", $time, instruction, out);
 	end
 
 	assign reg_dst 		= out[10];
@@ -166,7 +165,7 @@ module alu_control (input [2:0] alu_op, [5:0] func,
 			3'b000:
 				alu_code = 4'b0000;
 			3'b001:
-				alu_code = 4'b0001;
+				alu_code = 4'b1010;
 			3'b010:
 				alu_code = 4'b0100;
 			3'b011:
@@ -189,9 +188,9 @@ module alu_control (input [2:0] alu_op, [5:0] func,
 						6'b100101:		// or
 							alu_code = 4'b0101;
 						6'b101010:		// slt
-							alu_code = 4'b0001;
+							alu_code = 4'b1010;
 						6'b101011:		// slt u
-							alu_code = 4'b0001;
+							alu_code = 4'b1010;
 						6'b100010:		// sub
 							alu_code = 4'b0001;
 						6'b100011:		// sub u
@@ -222,7 +221,7 @@ endmodule
 module register (input clk, reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg, [31:0] write_data, 
 					output [31:0] read_data_1,  [31:0] read_data_2);
 
-	reg [31:0] regs [7:0];
+	reg [31:0] regs [31:0];
 	
 	integer i;
 	initial begin
@@ -258,30 +257,35 @@ endmodule
 
 module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 								output reg zero, [31:0] alu_result);
+	
+	reg sub = 0;
+	wire [31:0] add_sub_result;
+	
+	adder_subtracter_32_bit adder (sub, A, B, add_sub_result);
 													
-	wire [31:0] addition_result;
-	adder_32_bit adder (A, B, addition_result);
-													
-	always @ (alu_control or A or B or addition_result) begin		
+	always @ (alu_control or A or B or add_sub_result) begin		
 		case (alu_control)
 			4'b0000: 
-				alu_result <= addition_result;
+				alu_result = add_sub_result;
 			4'b0001:
 				begin
-					alu_result = A - B;
+					sub = 1;
+					alu_result = add_sub_result;
 					if (alu_result == 32'b0)
 						zero = 1'b1;
 					else
 						zero = 1'b0;
 				end
-			4'b1010:
+			/*4'b1010:
 				begin
-					alu_result = A - B;
+					sub = 1;
+					alu_result = add_sub_result;
 					if (alu_result != 32'b0)
 						zero = 1'b1;
 					else
 						zero = 1'b0;
 				end
+			*/
 			4'b0010:
 				alu_result = A * B;
 			4'b0011:
@@ -298,6 +302,13 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 				alu_result = B >> A;
 			4'b1001:
 				alu_result = B << A;
+			4'b1010:
+				begin
+					if (A < B)
+						alu_result = 32'b1;
+					else
+						alu_result = 32'b0;
+				end
 			default:
 				alu_result = 32'b0;
 		endcase
@@ -340,18 +351,21 @@ module full_adder(input x, y, c_in,
 
 endmodule
 
-module adder_32_bit (input [31:0] A, B,
-						output [31:0] sum);
+module adder_subtracter_32_bit (input sub, [31:0] A, B,
+									output [31:0] sum);
 
 	genvar i;
 	wire [31:0] c;
+	wire [31:0] FIN_B;
 	
+	assign FIN_B = (sub == 1'b1) ? (~B + 1) : B;
+ 	
 	generate 
 		for (i=0; i<32; i=i+1) begin
 			if (i == 0)
-				full_adder fa (A[i], B[i], 1'b0, sum[i], c[i]);
+				full_adder fa (A[i], FIN_B[i], 1'b0, sum[i], c[i]);
 			else
-				full_adder fa (A[i], B[i], c[i-1], sum[i], c[i]);
+				full_adder fa (A[i], FIN_B[i], c[i-1], sum[i], c[i]);
 		end 
 	endgenerate
 	

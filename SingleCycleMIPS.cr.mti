@@ -7,7 +7,7 @@ Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 
 -- Compiling module arithmetic_logic_unit
 -- Compiling module data_memory
 -- Compiling module full_adder
--- Compiling module adder_32_bit
+-- Compiling module adder_subtracter_32_bit
 
 Top level modules:
 	mips_processor

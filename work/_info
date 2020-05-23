@@ -30,21 +30,42 @@ Z9 !s90 -reportprogress|300|-work|work|-stats=none|C:/Users/PC/Documents/Verilog
 !i113 1
 Z10 o-work work -L mtiAvm -L mtiRnm -L mtiOvm -L mtiUvm -L mtiUPF -L infact -O0
 vadder_32_bit
-Z11 !s110 1590155074
+!s110 1590229366
 !i10b 1
-!s100 K<VH<dR1@9Z?dNl5J;V;<3
-IS^<P=50YSQSCPcFc4;c182
+!s100 Pj8EfUInnoQCXIkaN1Y1j1
+I6IHW=cDT>ZE3Ea`CZECQ82
 R1
 R2
-Z12 w1590155068
+w1590229363
 R4
 R5
-L0 343
+L0 347
 R6
 r1
 !s85 0
 31
-Z13 !s108 1590155074.000000
+!s108 1590229366.000000
+R8
+R9
+!s101 -O0
+!i113 1
+R10
+vadder_subtracter_32_bit
+Z11 !s110 1590232749
+!i10b 1
+!s100 _]<??[7g3O>3@Ocd]>Q8]3
+I_1IXG`026gP`<YZ]CF[YX0
+R1
+R2
+Z12 w1590232496
+R4
+R5
+L0 354
+R6
+r1
+!s85 0
+31
+Z13 !s108 1590232749.000000
 R8
 R9
 !s101 -O0
@@ -53,14 +74,14 @@ R10
 valu_control
 R11
 !i10b 1
-!s100 Wzh_0dI>GcP69;fJ_GUFE3
-ImGhRfgY<h]]ZWEJ<X@>kS3
+!s100 >[9nEN[M1E0V`R?f;hGX<3
+IF=cGE5MELVJ>ETJk1E@hJ3
 R1
 R2
 R12
 R4
 R5
-L0 147
+L0 146
 R6
 r1
 !s85 0
@@ -74,14 +95,14 @@ R10
 varithmetic_logic_unit
 R11
 !i10b 1
-!s100 0;4[j?nTj[W3ImPRYGHh@3
-Iidz0TKfSWKXW1T]iI@JMc3
+!s100 7a=`]7_:TS4LYV:ePQeo90
+IS4mN0jaQNo<R45?D1FcWI0
 R1
 R2
 R12
 R4
 R5
-L0 259
+L0 258
 R6
 r1
 !s85 0
@@ -95,8 +116,8 @@ R10
 vcontrol
 R11
 !i10b 1
-!s100 mMNjhjoN=2DNdOXj;O3e32
-IIXAaaCV@VThNZB_SDaz>L2
+!s100 ?Z:MEcO2G_z]bRoO`n@kA3
+I_Oc_zejgJAD]E5SL`amQc1
 R1
 R2
 R12
@@ -137,14 +158,14 @@ R10
 vdata_memory
 R11
 !i10b 1
-!s100 cYCd=6nS4734MO:c`9FUL1
-I2;I1k[k;jEzUAQXg]JdGo0
+!s100 dZ:@oc2Z`m4RfUoPEegYo0
+IZjgDTZbznCog^L]D4IaMS0
 R1
 R2
 R12
 R4
 R5
-L0 310
+L0 321
 R6
 r1
 !s85 0
@@ -158,14 +179,14 @@ R10
 vfull_adder
 R11
 !i10b 1
-!s100 LJPJD6@6Yd@951LZnd@9X0
-Ih;H4h_keVz8XzV8OW>U?N0
+!s100 27OzUZ2VSn96m5[zP`_>J0
+I3bM>RlS]ZV5:3Fbd3<3=[3
 R1
 R2
 R12
 R4
 R5
-L0 334
+L0 345
 R6
 r1
 !s85 0
@@ -179,8 +200,8 @@ R10
 vmips_processor
 R11
 !i10b 1
-!s100 K@GZEozzE96cNUZj@HgM53
-IkV@N6fz782UF]b]X6f?Z@1
+!s100 ;H9>T4;m_IP3<5kRRNCFS0
+IcO6:k^P9_PF;^XgddUK:H3
 R1
 R2
 R12
@@ -221,14 +242,14 @@ R10
 vregister
 R11
 !i10b 1
-!s100 F17DGRng0iUP:;E5:@iB03
-IQJfPY>Z`J^zocJVzQXYRe2
+!s100 eE@kBf1]o>m4A]<K:DEAC2
+I]DVDjEH^8W6>:2Q_A_XSG1
 R1
 R2
 R12
 R4
 R5
-L0 222
+L0 221
 R6
 r1
 !s85 0
