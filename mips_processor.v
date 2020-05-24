@@ -5,7 +5,7 @@ module mips_processor;
 	
 	initial begin
 				clk = 1'b0;
-		#160 	$stop;
+		#250 	$stop;
 	end
 	
 	always #5 clk = ~clk;
@@ -25,13 +25,15 @@ module mips_processor;
 	wire [31:0] read_data, read_data_1, read_data_2;
 	wire reg_dst, jump, branch, mem_read, mem_to_reg, mem_write, alu_src, reg_write;
 	
-	wire [31:0] alu_in_reg_2;
+	wire [31:0] alu_in_reg_1, alu_in_reg_2;
 	wire [31:0] sign_extended_15_0;
 	wire [4:0]	write_register;
 	wire [31:0] reg_write_data;
 	wire branch_enable;
+	wire shift_amount_enable;
 	
 	assign sign_extended_15_0 = {{16{instruction[15]}}, instruction[15:0]};
+	assign alu_in_reg_1 = (shift_amount_enable == 1'b1) ? instruction[10:6] : read_data_1;
 	assign alu_in_reg_2 = (alu_src == 1'b0) ? read_data_2 : sign_extended_15_0;
 	assign write_register = (reg_dst == 1'b0) ? instruction[20:16] : instruction[15:11];
 	assign reg_write_data = (mem_to_reg == 1'b1) ? read_data : alu_result;
@@ -40,11 +42,11 @@ module mips_processor;
 	control cntrl_unit (instruction[31:26], reg_dst, jump, branch, mem_read, 
 							mem_to_reg, mem_write, alu_src, reg_write, alu_op);
 							
-	alu_control alu_cntrl (alu_op, instruction[5:0], alu_code);
+	alu_control alu_cntrl (alu_op, instruction[5:0], shift_amount_enable, alu_code);
 	
 	register reg_unit (clk, reg_write, instruction[25:21], instruction[20:16], write_register, reg_write_data, read_data_1, read_data_2);
 	
-	arithmetic_logic_unit alu (alu_code, read_data_1, alu_in_reg_2, zero, alu_result);
+	arithmetic_logic_unit alu (alu_code, alu_in_reg_1, alu_in_reg_2, zero, alu_result);
 								
 	data_memory memory (clk, mem_read, mem_write, alu_result, read_data_2, read_data);
 	
@@ -144,7 +146,7 @@ module control (input [5:0] instruction,
 endmodule
 
 module alu_control (input [2:0] alu_op, [5:0] func,
-					output reg [3:0] alu_code);
+					output reg shift_amount_enable, [3:0] alu_code);
 						
 	// addition 		4'b0000
 	// subtraction 		4'b0001
@@ -160,7 +162,9 @@ module alu_control (input [2:0] alu_op, [5:0] func,
 	// shift_left		4'b1001
 	// sub_not			4'b1010
 					
-	always @ (alu_op or func) begin		
+	always @ (alu_op or func) begin
+		shift_amount_enable = 1'b0;
+		
 		case (alu_op)
 			3'b000:
 				alu_code = 4'b0000;
@@ -198,22 +202,31 @@ module alu_control (input [2:0] alu_op, [5:0] func,
 						6'b100110:		// xor
 							alu_code = 4'b0111;
 						6'b000000:		// shift left
-							alu_code = 4'b1001;
-						6'b000100:		// shift left
+							begin
+								shift_amount_enable = 1'b1;
+								alu_code = 4'b1001;
+							end
+						6'b000100:		// shift left logical
 							alu_code = 4'b1001;
 						6'b000011:		// shift right
-							alu_code = 4'b1000;
+							begin
+								shift_amount_enable = 1'b1;
+								alu_code = 4'b1000;
+							end
 						6'b000111:		// shift right
 							alu_code = 4'b1000;
 						6'b000010:		// shift right
-							alu_code = 4'b1000;
+							begin
+								shift_amount_enable = 1'b1;
+								alu_code = 4'b1000;
+							end
 						6'b000110:		// shift right
 							alu_code = 4'b1000;
 					endcase
 				end
 		endcase
 		
-		$display("%t ALU_CNTRL %b %b %b", $time, alu_op, func, alu_code);
+		$display("%t ALU_CNTRL %b %b %b %b", $time, alu_op, func, shift_amount_enable, alu_code);
 	end
 	
 endmodule
@@ -263,7 +276,9 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 	
 	adder_subtracter_32_bit adder (sub, A, B, add_sub_result);
 													
-	always @ (alu_control or A or B or add_sub_result) begin		
+	always @ (alu_control or A or B or add_sub_result) begin	
+		sub = 1'b0;
+		
 		case (alu_control)
 			4'b0000: 
 				alu_result = add_sub_result;
