@@ -19,16 +19,18 @@ module mips_processor;
 	end
 	
 	wire zero;
+	wire [1:0] mem_write, mem_to_reg;
 	wire [2:0] alu_op;
 	wire [3:0] alu_code;
 	wire [31:0] alu_result;
 	wire [31:0] read_data, read_data_1, read_data_2;
-	wire reg_dst, jump, branch, mem_read, mem_to_reg, mem_write, alu_src, reg_write;
+	wire reg_dst, jump, branch, mem_read, alu_src, reg_write;
 	
 	wire [31:0] alu_in_reg_1, alu_in_reg_2;
 	wire [31:0] sign_extended_15_0;
 	wire [4:0]	write_register;
 	wire [31:0] reg_write_data;
+	wire [31:0] mem_write_data;
 	wire branch_enable;
 	wire shift_amount_enable;
 	
@@ -36,19 +38,22 @@ module mips_processor;
 	assign alu_in_reg_1 = (shift_amount_enable == 1'b1) ? instruction[10:6] : read_data_1;
 	assign alu_in_reg_2 = (alu_src == 1'b0) ? read_data_2 : sign_extended_15_0;
 	assign write_register = (reg_dst == 1'b0) ? instruction[20:16] : instruction[15:11];
-	assign reg_write_data = (mem_to_reg == 1'b1) ? read_data : alu_result;
+	assign reg_write_data = (mem_to_reg == 2'b11) ? read_data[15:0] : 
+							((mem_to_reg == 2'b01) ? read_data : alu_result);
 	assign branch_enable = branch & zero;
+	assign mem_write_data = (mem_write[1] == 1'b0) ? read_data_2 : {16'b0, read_data_2[15:0]};
 	
-	control cntrl_unit (instruction[31:26], reg_dst, jump, branch, mem_read, 
-							mem_to_reg, mem_write, alu_src, reg_write, alu_op);
+	control cntrl_unit (instruction[31:26], reg_dst, jump, branch, mem_read, alu_src, reg_write, 
+						mem_to_reg, mem_write, alu_op);
 							
 	alu_control alu_cntrl (alu_op, instruction[5:0], shift_amount_enable, alu_code);
 	
-	register reg_unit (clk, reg_write, instruction[25:21], instruction[20:16], write_register, reg_write_data, read_data_1, read_data_2);
+	register reg_unit (clk, reg_write, instruction[25:21], instruction[20:16], write_register, 
+						reg_write_data, read_data_1, read_data_2);
 	
 	arithmetic_logic_unit alu (alu_code, alu_in_reg_1, alu_in_reg_2, zero, alu_result);
 								
-	data_memory memory (clk, mem_read, mem_write, alu_result, read_data_2, read_data);
+	data_memory memory (clk, mem_read, mem_write, alu_result, mem_write_data, read_data);
 	
 	always @ (posedge clk) begin
 		if (jump == 1'b0 && branch_enable == 1'b0)
@@ -62,84 +67,84 @@ module mips_processor;
 		end
 		
 		instruction = instruction_memory[program_counter];
-		$display("%t INSTR %b", $time, instruction);
+		$display("%t INSTR %b %b", $time, instruction, program_counter);
 	end
 	
 endmodule
 
 module control (input [5:0] instruction,
-					output reg_dst, jump, branch, mem_read, mem_to_reg, mem_write, alu_src, reg_write, [2:0] alu_op);
+					output reg_dst, jump, branch, mem_read, alu_src, reg_write, [1:0] mem_to_reg, [1:0] mem_write, [2:0] alu_op);
 
 	/*
 	instruction    reg_dst    jump    branch    mem_read     mem_to_reg    alu_op    mem_write    alu_src    reg_write		
-	  000000          1        0        0         0             0           111         0           0           1
-	  000010          0        1        0         0             0           000         0           0           0
-	  000011          0        1        0         0             1           000         0           0           1
-	  000100          0        0        1         0             0           001         0           0           0
-	  000101          0        0        1         0             0           101         0           0           0
-	  001000          0		   0		0		  0				0			000			0			1			1
-	  001001          0        0        0         0             0           000         0           1           1
-	  001010          0        0        0         0             0           001         0           1           1
-	  001011          0        0        0         0             0           001         0           1           1
-	  001100          0        0        0         0             0           010         0           1           1
-	  001101          0        0        0         0             0           011         0           1           1
-	  001110          0        0        0         0             0           100         0           1           1
-	  100000		  0	       0        0         1             1          	000         0           1           1
-	  100011		  0	       0        0         1             1          	000         0           1           1
-	  101000		  0        0        0         0             0          	000         1           1           0
-	  101011		  0        0        0         0             0           000         1           1           0
+	  000000          1        0        0         0             00           111         00          0           1
+	  000010          0        1        0         0             00           000         00          0           0
+	  000011          0        1        0         0             01           000         00          0           1
+	  000100          0        0        1         0             00           110         00          0           0
+	  000101          0        0        1         0             00           101         00          0           0
+	  001000          0		   0		0		  0				00			 000	     00			 1			 1
+	  001001          0        0        0         0             00           000         00          1           1
+	  001010          0        0        0         0             00           001         00          1           1
+	  001011          0        0        0         0             00           001         00          1           1
+	  001100          0        0        0         0             00           010         00          1           1
+	  001101          0        0        0         0             00           011         00          1           1
+	  001110          0        0        0         0             00           100         00          1           1
+	  100000		  0	       0        0         1             11           000         00          1           1
+	  100011		  0	       0        0         1             01           000         00          1           1
+	  101000		  0        0        0         0             00           000         11          1           0
+	  101011		  0        0        0         0             00           000         01          1           0
 	*/
 	
-	reg [10:0] out;
+	reg [12:0] out;
 	
 	always @ (instruction) begin																				
 		case (instruction)
 			6'b000000:
-				out = 11'b10000111001;
+				out = 13'b1000001110001;
 			6'b000010:
-				out = 11'b01000000000;
+				out = 13'b0100000000000;
 			6'b000011:
-				out = 11'b01001000001;
+				out = 13'b0100010000001;
 			6'b000100:
-				out = 11'b00100001000;
+				out = 13'b0010001100000;
 			6'b000101:
-				out = 11'b00100101000;
+				out = 13'b0010001010000;
 			6'b001000:
-				out = 11'b00000000011;
+				out = 13'b0000000000011;
 			6'b001001:
-				out = 11'b00000000011;
+				out = 13'b0000000000011;
 			6'b001010:
-				out = 11'b00000001011;
+				out = 13'b0000000010011;
 			6'b001011:
-				out = 11'b00000001011;
+				out = 13'b0000000010011;
 			6'b001100:
-				out = 11'b00000010011;
+				out = 13'b0000000100011;
 			6'b001101:
-				out = 11'b00000011011;
+				out = 13'b0000000110011;
 			6'b001110:
-				out = 11'b00000100011;
+				out = 13'b0000001000011;
 			6'b100000:
-				out = 11'b00011000011;
+				out = 13'b0001110000011;
 			6'b100011:
-				out = 11'b00011000011;
+				out = 13'b0001010000011;
 			6'b101000:
-				out = 11'b00000000110;
+				out = 13'b0000000001110;
 			6'b101011:
-				out = 11'b00000000110;
+				out = 13'b0000000000110;
 			default:
-				out = 11'b0;
+				out = 13'b0;
 		endcase
 		
 		$display("%t CNTRL %b %b", $time, instruction, out);
 	end
 
-	assign reg_dst 		= out[10];
-	assign jump 		= out[9];
-	assign branch 		= out[8];
-	assign mem_read 	= out[7];
-	assign mem_to_reg 	= out[6];
-	assign alu_op 		= out[5:3];
-	assign mem_write 	= out[2];
+	assign reg_dst 		= out[12];
+	assign jump 		= out[11];
+	assign branch 		= out[10];
+	assign mem_read 	= out[9];
+	assign mem_to_reg 	= out[8:7];
+	assign alu_op 		= out[6:4];
+	assign mem_write 	= out[3:2];
 	assign alu_src 		= out[1];
 	assign reg_write 	= out[0];
 
@@ -178,6 +183,8 @@ module alu_control (input [2:0] alu_op, [5:0] func,
 				alu_code = 4'b0111;
 			3'b101:
 				alu_code = 4'b1010;
+			3'b110:
+				alu_code = 4'b0001;
 			3'b111:
 				begin
 					case (func)
@@ -336,12 +343,12 @@ endmodule
 module data_memory(input clk, mem_read, mem_write, [31:0] address, [31:0] write_data, 
 					output reg [31:0] read_data);
 
-	reg [31:0] mem [7:0];
+	reg [31:0] mem [31:0];
 	
 	integer i;
 	initial begin
 		for (i=0; i<255; i=i+1)
-			mem[i] = 32'b0;
+			mem[i] <= 32'b0;
 	end
 	
 	always @ (posedge clk) begin
@@ -352,9 +359,10 @@ module data_memory(input clk, mem_read, mem_write, [31:0] address, [31:0] write_
 		else
 			read_data = 32'b0;
 			
+		$writememh("mem_file.dat", mem);
 		$display("%t DATA_MEM %b %b %b %b %b", $time, mem_read, mem_write, address, write_data, read_data);
 	end
-
+	
 endmodule
 
 module full_adder(input x, y, c_in, 
