@@ -42,12 +42,10 @@ MULTU 	rs,rt	Multiply U		HI,LO=rs*rt			000000	rs		rt		00000	00000	011001
 Branch
 
 BEQ 	rs,rt,offset	Branch On Equal			if(rs==rt) pc+=offset*4			000100	rs		rt		offset
-BGEZ 	rs,offset		Branch On >= 0			if(rs>=0) pc+=offset*4			000001	rs		00001	offset
-BGEZAL 	rs,offset		Branch On >= 0 And Link	r31=pc; if(rs>=0) pc+=offset*4	000001	rs		10001	offset
+BGEZ 	rs,offset		Branch On >= 0			if(rs>=0) pc+=offset*4			000001	rs		00000	offset
 BGTZ 	rs,offset		Branch On > 0			if(rs>0) pc+=offset*4			000111	rs		00000	offset
 BLEZ 	rs,offset		Branch On <= 0			if(rs<=0) pc+=offset*4			000110	rs		00000	offset
-BLTZ 	rs,offset		Branch On < 0			if(rs<0) pc+=offset*4			000001	rs		00000	offset
-BLTZAL 	rs,offset		Branch On < 0 And Link	r31=pc; if(rs<0) pc+=offset*4	000001	rs		10000	offset
+BLTZ 	rs,offset		Branch On < 0			if(rs<0) pc+=offset*4			010001	rs		00000	offset
 BNE 	rs,rt,offset	Branch On Not Equal		if(rs!=rt) pc+=offset*4			000101	rs		rt		offset
 BREAK					Breakpoint				epc=pc; pc=0x3c					000000	code							001101
 J target				Jump					pc=pc_upper|(target<<2)			000010	target

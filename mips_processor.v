@@ -18,21 +18,20 @@ module mips_processor;
 		$readmemh("test_program_1_mem_file.dat", instruction_memory);
 	end
 	
-	wire zero;
-	wire [1:0] mem_write, mem_to_reg;
-	wire [2:0] alu_op;
-	wire [3:0] alu_code;
+	wire [1:0]  mem_write, mem_to_reg;
+	wire [2:0]  alu_op, branch;
+	wire [3:0]  alu_code;
+	wire [4:0]	write_register;
 	wire [31:0] alu_result;
 	wire [31:0] read_data, read_data_1, read_data_2;
-	wire reg_dst, jump, branch, mem_read, alu_src, reg_write;
-	
 	wire [31:0] alu_in_reg_1, alu_in_reg_2;
 	wire [31:0] sign_extended_15_0;
-	wire [4:0]	write_register;
 	wire [31:0] reg_write_data;
 	wire [31:0] mem_write_data;
+	wire eq, gt, lt;
 	wire branch_enable;
 	wire shift_amount_enable;
+	wire reg_dst, jump, mem_read, alu_src, reg_write;
 	
 	assign sign_extended_15_0 = {{16{instruction[15]}}, instruction[15:0]};
 	assign alu_in_reg_1 = (shift_amount_enable == 1'b1) ? instruction[10:6] : read_data_1;
@@ -40,18 +39,22 @@ module mips_processor;
 	assign write_register = (reg_dst == 1'b0) ? instruction[20:16] : instruction[15:11];
 	assign reg_write_data = (mem_to_reg == 2'b11) ? read_data[15:0] : 
 							((mem_to_reg == 2'b01) ? read_data : alu_result);
-	assign branch_enable = branch & zero;
+	assign branch_enable = (branch == 3'b001 && eq == 1'b1) ? 1'b1 :
+							((branch == 3'b010 && eq == 1'b0) ? 1'b1 : 
+							((branch == 3'b011 && (eq == 1'b1 || gt == 1'b1)) ? 1'b1 :
+							((branch == 3'b100 && lt == 1'b1) ? 1'b1 :
+							((branch == 3'b101 && (lt == 1'b1 || eq == 1'b1)) ? 1'b1 : 1'b0))));
 	assign mem_write_data = (mem_write[1] == 1'b0) ? read_data_2 : {16'b0, read_data_2[15:0]};
 	
-	control cntrl_unit (instruction[31:26], reg_dst, jump, branch, mem_read, alu_src, reg_write, 
-						mem_to_reg, mem_write, alu_op);
+	control cntrl_unit (instruction[31:26], reg_dst, jump, mem_read, alu_src, reg_write, mem_to_reg, 
+							branch, mem_write, alu_op);
 							
 	alu_control alu_cntrl (alu_op, instruction[5:0], shift_amount_enable, alu_code);
 	
 	register reg_unit (clk, reg_write, instruction[25:21], instruction[20:16], write_register, 
 						reg_write_data, read_data_1, read_data_2);
 	
-	arithmetic_logic_unit alu (alu_code, alu_in_reg_1, alu_in_reg_2, zero, alu_result);
+	arithmetic_logic_unit alu (alu_code, alu_in_reg_1, alu_in_reg_2, eq, gt, lt, alu_result);
 								
 	data_memory memory (clk, mem_read, mem_write, alu_result, mem_write_data, read_data);
 	
@@ -73,74 +76,87 @@ module mips_processor;
 endmodule
 
 module control (input [5:0] instruction,
-					output reg_dst, jump, branch, mem_read, alu_src, reg_write, [1:0] mem_to_reg, [1:0] mem_write, [2:0] alu_op);
+					output reg_dst, jump, mem_read, alu_src, reg_write, mem_to_reg, 
+							[2:0] branch, [1:0] mem_write, [2:0] alu_op);
 
 	/*
-	instruction    reg_dst    jump    branch    mem_read     mem_to_reg    alu_op    mem_write    alu_src    reg_write		
-	  000000          1        0        0         0             00           111         00          0           1
-	  000010          0        1        0         0             00           000         00          0           0
-	  000011          0        1        0         0             01           000         00          0           1
-	  000100          0        0        1         0             00           110         00          0           0
-	  000101          0        0        1         0             00           101         00          0           0
-	  001000          0		   0		0		  0				00			 000	     00			 1			 1
-	  001001          0        0        0         0             00           000         00          1           1
-	  001010          0        0        0         0             00           001         00          1           1
-	  001011          0        0        0         0             00           001         00          1           1
-	  001100          0        0        0         0             00           010         00          1           1
-	  001101          0        0        0         0             00           011         00          1           1
-	  001110          0        0        0         0             00           100         00          1           1
-	  100000		  0	       0        0         1             11           000         00          1           1
-	  100011		  0	       0        0         1             01           000         00          1           1
-	  101000		  0        0        0         0             00           000         11          1           0
-	  101011		  0        0        0         0             00           000         01          1           0
+	instruction    reg_dst    jump     branch    mem_read     mem_to_reg     alu_op     mem_write   alu_src    reg_write		
+	  000000          1        0        000         0             00           111         00          0           1
+	  000001          0        0        011         0             00           101         00          0           0
+	  000010          0        1        000         0             00           000         00          0           0
+	  000011          0        1        000         0             01           000         00          0           1
+	  000100          0        0        001         0             00           101         00          0           0
+	  000101          0        0        010         0             00           101         00          0           0
+	  000110          0        0        101         0             00           101         00          0           0
+	  000111          0        0        110         0             00           101         00          0           0
+	  001000          0		   0		000 		0			  00		   000	       00		   1		   1
+	  001001          0        0        000         0             00           000         00          1           1
+	  001010          0        0        000         0             00           001         00          1           1
+	  001011          0        0        000         0             00           001         00          1           1
+	  001100          0        0        000         0             00           010         00          1           1
+	  001101          0        0        000         0             00           011         00          1           1
+	  001110          0        0        000         0             00           100         00          1           1
+	  010001          0        0        100         0             00           101         00          0           0
+	  100000		  0	       0        000         1             11           000         00          1           1
+	  100011		  0	       0        000         1             01           000         00          1           1
+	  101000		  0        0        000         0             00           000         11          1           0
+	  101011		  0        0        000         0             00           000         01          1           0
 	*/
 	
-	reg [12:0] out;
+	reg [14:0] out;
 	
 	always @ (instruction) begin																				
 		case (instruction)
 			6'b000000:
-				out = 13'b1000001110001;
+				out = 15'b100000001110001;
+			6'b000001:
+				out = 15'b000110001010000;
 			6'b000010:
-				out = 13'b0100000000000;
+				out = 15'b010000000000000;
 			6'b000011:
-				out = 13'b0100010000001;
+				out = 15'b010000010000001;
 			6'b000100:
-				out = 13'b0010001100000;
+				out = 15'b000010001010000;
 			6'b000101:
-				out = 13'b0010001010000;
+				out = 15'b000100001010000;
+			6'b000110:
+				out = 15'b001100001010000;
+			6'b000111:
+				out = 15'b001100001010000;
 			6'b001000:
-				out = 13'b0000000000011;
+				out = 15'b000000000000011;
 			6'b001001:
-				out = 13'b0000000000011;
+				out = 15'b000000000000011;
 			6'b001010:
-				out = 13'b0000000010011;
+				out = 15'b000000000010011;
 			6'b001011:
-				out = 13'b0000000010011;
+				out = 15'b000000000010011;
 			6'b001100:
-				out = 13'b0000000100011;
+				out = 15'b000000000100011;
 			6'b001101:
-				out = 13'b0000000110011;
+				out = 15'b000000000110011;
 			6'b001110:
-				out = 13'b0000001000011;
+				out = 15'b000000001000011;
+			6'b010001:
+				out = 15'b001000001010000;
 			6'b100000:
-				out = 13'b0001110000011;
+				out = 15'b000001110000011;
 			6'b100011:
-				out = 13'b0001010000011;
+				out = 15'b000001010000011;
 			6'b101000:
-				out = 13'b0000000001110;
+				out = 15'b000000000001110;
 			6'b101011:
-				out = 13'b0000000000110;
+				out = 15'b000000000000110;
 			default:
-				out = 13'b0;
+				out = 15'b0;
 		endcase
 		
 		$display("%t CNTRL %b %b", $time, instruction, out);
 	end
 
-	assign reg_dst 		= out[12];
-	assign jump 		= out[11];
-	assign branch 		= out[10];
+	assign reg_dst 		= out[14];
+	assign jump 		= out[13];
+	assign branch 		= out[12:10];
 	assign mem_read 	= out[9];
 	assign mem_to_reg 	= out[8:7];
 	assign alu_op 		= out[6:4];
@@ -165,7 +181,8 @@ module alu_control (input [2:0] alu_op, [5:0] func,
 	
 	// shift_right		4'b1000
 	// shift_left		4'b1001
-	// sub_not			4'b1010
+	
+	// comparison		4'b1010
 					
 	always @ (alu_op or func) begin
 		shift_amount_enable = 1'b0;
@@ -174,7 +191,7 @@ module alu_control (input [2:0] alu_op, [5:0] func,
 			3'b000:
 				alu_code = 4'b0000;
 			3'b001:
-				alu_code = 4'b1010;
+				alu_code = 4'b0001;
 			3'b010:
 				alu_code = 4'b0100;
 			3'b011:
@@ -276,7 +293,7 @@ module register (input clk, reg_write, [4:0] reg_1, [4:0] reg_2, [4:0] write_reg
 endmodule
 
 module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
-								output reg zero, [31:0] alu_result);
+								output reg eq, gt, lt, [31:0] alu_result);
 	
 	reg sub = 0;
 	wire [31:0] add_sub_result;
@@ -285,6 +302,9 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 													
 	always @ (alu_control or A or B or add_sub_result) begin	
 		sub = 1'b0;
+		eq = 1'b0;
+		gt = 1'b0;
+		lt = 1'b0;
 		
 		case (alu_control)
 			4'b0000: 
@@ -294,20 +314,10 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 					sub = 1;
 					alu_result = add_sub_result;
 					if (alu_result == 32'b0)
-						zero = 1'b1;
+						eq = 1'b1;
 					else
-						zero = 1'b0;
+						eq = 1'b0;
 				end
-			/*4'b1010:
-				begin
-					sub = 1;
-					alu_result = add_sub_result;
-					if (alu_result != 32'b0)
-						zero = 1'b1;
-					else
-						zero = 1'b0;
-				end
-			*/
 			4'b0010:
 				alu_result = A * B;
 			4'b0011:
@@ -326,10 +336,12 @@ module arithmetic_logic_unit (input [3:0] alu_control, [31:0] A, [31:0] B,
 				alu_result = B << A;
 			4'b1010:
 				begin
+					if (A == B)
+						eq = 1'b1;
 					if (A < B)
-						alu_result = 32'b1;
-					else
-						alu_result = 32'b0;
+						lt = 1'b1;
+					if (A > B)
+						gt = 1'b1;
 				end
 			default:
 				alu_result = 32'b0;

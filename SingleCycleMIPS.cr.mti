@@ -1,15 +1,1 @@
-{C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v} {1 {vlog -work work -stats=none {C:/Users/PC/Documents/Verilog Projects/32-Bit Single Cycle MIPS Processor/mips_processor.v}
-Model Technology ModelSim PE Student Edition vlog 10.4a Compiler 2015.03 Apr  7 2015
--- Compiling module mips_processor
--- Compiling module control
--- Compiling module alu_control
--- Compiling module register
--- Compiling module arithmetic_logic_unit
--- Compiling module data_memory
--- Compiling module full_adder
--- Compiling module adder_subtracter_32_bit
 
-Top level modules:
-	mips_processor
-
-} {} {}}
